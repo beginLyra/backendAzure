@@ -1,0 +1,17 @@
+
+docker buildx build --platform linux/amd64 -t syacapi-dev:latest . --load
+
+docker run -d -p 8000:8000 --name my-fastapi-container --env-file .env syacapi-dev:latest
+
+az login
+
+az acr login --name acr2acsydev
+
+
+docker tag syacapi-dev:latest acr2acsydev.azurecr.io/acsy/api:latest
+docker tag syacapi-dev:latest acr2acsydev.azurecr.io/syacapi-dev:0.0.2
+
+
+
+docker push acr2acsydev.azurecr.io/acsy/api:latest
+docker push acr2acsydev.azurecr.io/syacapi-dev:0.0.2
