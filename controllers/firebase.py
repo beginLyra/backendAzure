@@ -137,7 +137,11 @@ async def login_user_firebase(user: UserLogin):
 async def generate_activation_code(email: EmailActivation):
 
     code = random.randint(100000, 999999)
-    query = f" exec exampleprep.generate_activation_code @email = '{email.email}', @code = {code}"
+    query = f"""
+    INSERT INTO [exampleprep].[activation_codes] ([email], [code])
+    VALUES ('{email.email}', {code});
+    """
+    # query =  f"EXEC exampleprep.generate_activation_code @email = '{email.email}', @code = {code}"
     result = {}
     try:
         result_json = await fetch_query_as_json(query, is_procedure=True)
@@ -147,6 +151,36 @@ async def generate_activation_code(email: EmailActivation):
         raise HTTPException(status_code=500, detail=str(e))
 
     return {
+        "estegmail":email.email,
+        "mira_loco":result,
         "message": "Código de activación generado exitosamente",
         "code": code
     }
+
+# SET ANSI_NULLS ON
+# GO
+
+# SET QUOTED_IDENTIFIER ON
+# GO
+
+# CREATE PROCEDURE [exampleprep].[generate_activation_code](
+#   @Email NVARCHAR(255),
+# @Code INT
+# )
+  
+# AS
+# BEGIN
+#     SET NOCOUNT ON;
+
+#     DECLARE @n INT=SELECT @n = COUNT(*) FROM [exampleprep].[users] WHERE [email] = @Email;
+
+#     IF @n > 0
+#     BEGIN
+#         INSERT INTO [exampleprep].[activation_codes] ([email], [code]) VALUES (@Email, @Code);
+#     END;
+
+#     -- Retorna un valor de control (opcional)
+#     SELECT 1 AS Completed;
+
+# END;
+# GO

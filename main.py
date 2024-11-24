@@ -27,7 +27,7 @@ app.add_middleware(
 async def read_root(response: Response):
     response.headers["Cache-Control"] = "no-cache"
     # query = "select * from exampleprep.hello"
-    query = "select * from syac.users"
+    query = "select * from [exampleprep].[users].users"
     try:
         result = await fetch_query_as_json(query)
         result_dict = json.loads(result)
