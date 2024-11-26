@@ -137,11 +137,11 @@ async def login_user_firebase(user: UserLogin):
 async def generate_activation_code(email: EmailActivation):
 
     code = random.randint(100000, 999999)
-    query = f"""
-    INSERT INTO [exampleprep].[activation_codes] ([email], [code])
-    VALUES ('{email.email}', {code});
-    """
-    # query =  f"EXEC exampleprep.generate_activation_code @email = '{email.email}', @code = {code}"
+    # query = f"""
+    # INSERT INTO [exampleprep].[activation_codes] ([email], [code])
+    # VALUES ('{email.email}', {code});
+    # """
+    query =  f"EXEC exampleprep.generate_activation_code @Email = '{email.email}', @Code = {code}"
     result = {}
     try:
         result_json = await fetch_query_as_json(query, is_procedure=True)
