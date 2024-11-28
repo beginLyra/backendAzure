@@ -64,7 +64,7 @@ async def register_user_firebase(user: UserRegister):
             detail=f"Error al registrar usuario: {e}"
         )\
     
-    query = f"INSERT INTO exampleprep.users (email, firstname, lastname) VALUES ('{user.email}', '{user.firstname}', '{user.lastname}');"
+    query = f"INSERT INTO exampleprep.users (email, firstname, lastname,active) VALUES ('{user.email}', '{user.firstname}', '{user.lastname}',0);"
     result = {}
     try:
 
@@ -137,10 +137,6 @@ async def login_user_firebase(user: UserLogin):
 async def generate_activation_code(email: EmailActivation):
 
     code = random.randint(100000, 999999)
-    # query = f"""
-    # INSERT INTO [exampleprep].[activation_codes] ([email], [code])
-    # VALUES ('{email.email}', {code});
-    # """
     query =  f"EXEC exampleprep.generate_activation_code @Email = '{email.email}', @Code = {code}"
     result = {}
     try:
@@ -156,6 +152,34 @@ async def generate_activation_code(email: EmailActivation):
         "message": "Código de activación generado exitosamente",
         "code": code
     }
+
+async def put_activation_code(email: EmailActivation, code: int):
+    query = f"EXEC exampleprep.VerifyAndActivateUser_Test @Email ='{email.email}', @Code = {code}"
+    result = {}
+    
+    try:
+        # Realiza la consulta
+        result_json = await fetch_query_as_json(query, is_procedure=True)
+        result = json.loads(result_json)[0]  # Asumimos que el primer elemento tiene la respuesta
+
+        # Verifica si el código ha expirado
+        if result.get("Message") == 'Código expirado':
+            # Loguea el correo
+            logger.info("MIRAAAAAAAAAAAA ACA ESTA EL CORREO: %s", email.email)
+            
+            # Inserta el correo nuevamente en la cola
+            await insert_message_on_queue(email.email)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {
+        "estegmail": email.email,
+        "serverResponse": result,
+        "message": "Código de activación generado exitosamente",
+        "code": code
+    }
+
 
 # SET ANSI_NULLS ON
 # GO

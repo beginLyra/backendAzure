@@ -1,6 +1,6 @@
 import json
 import uvicorn
-
+from urllib.parse import unquote
 from typing import Union
 from fastapi import FastAPI, HTTPException, Response, Request
 from utils.database import fetch_query_as_json
@@ -11,7 +11,7 @@ from models.UserRegister import UserRegister
 from models.UserLogin import UserLogin
 from models.EmailActivation import EmailActivation
 
-from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code
+from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code,put_activation_code
 
 app = FastAPI()
 
@@ -65,7 +65,37 @@ async def generate_code(request: Request, email: str):
     e = EmailActivation(email=email)
     return await generate_activation_code(e)
 
+@app.post("/user/{email}/{code}/code2")
+async def generate_code(request: Request, email: str,code: int):
+    e = EmailActivation(email=email)
+    return await put_activation_code(e,code)
 
+
+
+
+@app.get("/user/activationcode/{email}")
+async def read_activation_code(email: str, response: Response):
+    response.headers["Cache-Control"] = "no-cache"
+    query = f"""
+    	select active from [exampleprep].[users] e where e.email='{email}'
+
+    """
+    try:
+        result = await fetch_query_as_json(query)
+        result_dict = json.loads(result)
+
+        # Asumimos que la consulta retorna un array con el resultado
+       
+        return result_dict
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+    
+    
+
+        
+                            
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
