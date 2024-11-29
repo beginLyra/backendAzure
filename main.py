@@ -30,7 +30,7 @@ async def read_root(response: Response):
     query = "select * from [exampleprep].[users]"
     try:
         result = await fetch_query_as_json(query)
-        result_dict = json.loads(result)
+        result_dict = json.loads(result) #Este nos ayuda para converit en diccionario
         result_dict = {
             "data": result_dict
             , "version": "0.0.7"
@@ -38,8 +38,6 @@ async def read_root(response: Response):
         return result_dict
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 @app.post("/register")
 async def register(user: UserRegister):
@@ -65,7 +63,7 @@ async def generate_code(request: Request, email: str):
     e = EmailActivation(email=email)
     return await generate_activation_code(e)
 
-@app.post("/user/{email}/{code}/code2")
+@app.post("/user/{email}/{code}/code2") #este nos ayuda a activar la cuenta
 async def generate_code(request: Request, email: str,code: int):
     e = EmailActivation(email=email)
     return await put_activation_code(e,code)
@@ -73,7 +71,8 @@ async def generate_code(request: Request, email: str,code: int):
 
 
 
-@app.get("/user/activationcode/{email}")
+@app.get("/user/activationcode/{email}") # nos ayuda a ver si el usuario esta activado
+
 async def read_activation_code(email: str, response: Response):
     response.headers["Cache-Control"] = "no-cache"
     query = f"""
