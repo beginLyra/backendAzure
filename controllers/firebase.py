@@ -180,6 +180,25 @@ async def put_activation_code(email: EmailActivation, code: int):
         "code": code
     }
 
+async def time_code(email: EmailActivation):
+    query = f"EXEC [exampleprep].GetRecentActivationCodeWithTimeElapsed @Email ='{email.email}'"
+    result = {}
+    
+    try:
+        # Realiza la consulta
+        result_json = await fetch_query_as_json(query, is_procedure=True)
+        result = json.loads(result_json)[0]  # Asumimos que el primer elemento tiene la respuesta
+
+
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {
+     
+        "serverResponse": result
+        
+    }
 
 # SET ANSI_NULLS ON
 # GO

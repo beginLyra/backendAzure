@@ -11,7 +11,7 @@ from models.UserRegister import UserRegister
 from models.UserLogin import UserLogin
 from models.EmailActivation import EmailActivation
 
-from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code,put_activation_code
+from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code,put_activation_code,time_code
 
 app = FastAPI()
 
@@ -89,6 +89,11 @@ async def read_activation_code(email: str, response: Response):
         return result_dict
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/timecode/{email}")
+async def generate_code(request: Request, email: str):
+    e = EmailActivation(email=email)
+    return await time_code(e)
     
 
     
